@@ -486,7 +486,7 @@ const findReadmeFilename = async (
     if (!res.ok) return undefined
 
     let rawResponse: unknown = await res.json()
-    
+
     // Handle double-encoded JSON (server returns JSON string)
     if (typeof rawResponse === 'string') {
       try {
@@ -495,9 +495,9 @@ const findReadmeFilename = async (
         return undefined
       }
     }
-    
+
     const files = rawResponse as { name: string; type: string }[]
-    
+
     if (!Array.isArray(files)) return undefined
 
     // Find a file that matches "readme" (case-insensitive) with common extensions
@@ -510,9 +510,7 @@ const findReadmeFilename = async (
     // If no extension match, try just "readme" (no extension)
     if (!readmeFile) {
       const readmeNoExt = files.find(
-        file =>
-          file.type === 'file' &&
-          /^readme$/i.test(file.name),
+        file => file.type === 'file' && /^readme$/i.test(file.name),
       )
       return readmeNoExt?.name
     }
@@ -559,7 +557,7 @@ const fetchReadmeFromLocal = ({
       if (!res.ok) return undefined
 
       let data: unknown = await res.json()
-      
+
       // Handle double-encoded JSON (server returns JSON string)
       if (typeof data === 'string') {
         try {
@@ -568,7 +566,7 @@ const fetchReadmeFromLocal = ({
           return undefined
         }
       }
-      
+
       const typedData = data as { content?: string }
 
       if (!typedData.content) return undefined
@@ -675,7 +673,7 @@ const fetchDownloadsLastYear = ({ spec }: { spec: Spec }) =>
 
     const res = yield* httpClient
       .get(
-      `https://api.npmjs.org/downloads/range/last-year/${encodeURIComponent(spec.name)}`,
+        `https://api.npmjs.org/downloads/range/last-year/${encodeURIComponent(spec.name)}`,
       )
       .pipe(
         Effect.catchTags({
@@ -697,16 +695,16 @@ const fetchDownloadsLastYear = ({ spec }: { spec: Spec }) =>
     if (!data) return undefined
 
     return {
-          downloadsLastYear: {
-            start: data.start,
-            end: data.end,
-            downloads: data.downloads.map(
-              (download: { downloads: number; day: string }) => ({
-                downloads: download.downloads,
-                day: download.day,
-              }),
-            ),
-          },
+      downloadsLastYear: {
+        start: data.start,
+        end: data.end,
+        downloads: data.downloads.map(
+          (download: { downloads: number; day: string }) => ({
+            downloads: download.downloads,
+            day: download.day,
+          }),
+        ),
+      },
     }
   })
 
@@ -755,7 +753,7 @@ const fetchDownloadsPerVersion = ({ spec }: { spec: Spec }) =>
 
     if (!data) return undefined
 
-      return {
+    return {
       downloadsPerVersion: data.downloads,
     }
   })
@@ -840,7 +838,9 @@ const fetchRegistryManifest = ({ spec }: { spec: Spec }) =>
     const url = new URL(spec.registry)
     // Use 'latest' if bareSpec is a range (contains ^, ~, >, <, =, etc.) or is missing
     const isRange =
-      !spec.bareSpec || /[~^><=|]/.test(spec.bareSpec) || spec.bareSpec === '*'
+      !spec.bareSpec ||
+      /[~^><=|]/.test(spec.bareSpec) ||
+      spec.bareSpec === '*'
     url.pathname = `${spec.name}/${isRange ? 'latest' : spec.bareSpec}`
 
     const res = yield* httpClient.get(url).pipe(
@@ -1071,8 +1071,8 @@ const fetchDetailsEffect = ({
               'directory' in manifest.repository
             ) ?
               (manifest.repository as { directory: string }).directory
-              : undefined,
-          }
+            : undefined,
+        }
       : undefined
 
     // Run all independent effects concurrently with error tracking
@@ -1398,9 +1398,12 @@ export const fetchDetails = ({
   projectRoot?: string
 }): Promise<DetailsInfo> =>
   Effect.runPromise(
-    fetchDetailsEffect({ spec, manifest, packageLocation, projectRoot }).pipe(
-      Effect.provide(HttpClientNoTracing),
-    ),
+    fetchDetailsEffect({
+      spec,
+      manifest,
+      packageLocation,
+      projectRoot,
+    }).pipe(Effect.provide(HttpClientNoTracing)),
   )
 
 export {
@@ -1423,4 +1426,3 @@ export {
   HttpClientNoTracing,
   API_TIMEOUT_MS,
 }
-

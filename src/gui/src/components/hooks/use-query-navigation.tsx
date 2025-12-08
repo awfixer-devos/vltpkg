@@ -76,5 +76,11 @@ export const useQueryNavigation = () => {
         })
       }
     }
-  }, [query, navigate, location.pathname, encodedQueryURL, isNpmRoute])
+  }, [
+    query,
+    navigate,
+    location.pathname,
+    encodedQueryURL,
+    isNpmRoute,
+  ])
 }

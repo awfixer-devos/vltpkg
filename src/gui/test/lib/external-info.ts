@@ -1,7 +1,7 @@
 import { test, expect, describe, vi, beforeEach } from 'vitest'
 import { Effect } from 'effect'
-import { FetchHttpClient  } from '@effect/platform'
-import type {HttpClient} from '@effect/platform';
+import { FetchHttpClient } from '@effect/platform'
+import type { HttpClient } from '@effect/platform'
 import { Spec } from '@vltpkg/spec/browser'
 import { normalizeManifest } from '@vltpkg/types'
 import {
@@ -55,9 +55,13 @@ const createMockFetch = (mockResponses: MockResponses) =>
         const isMockResponse =
           typeof response === 'object' &&
           response !== null &&
-          ('body' in response || 'status' in response || 'isText' in response)
+          ('body' in response ||
+            'status' in response ||
+            'isText' in response)
         const mockResp: MockResponse =
-          isMockResponse ? (response as MockResponse) : { body: response }
+          isMockResponse ?
+            (response as MockResponse)
+          : { body: response }
 
         const status = mockResp.status ?? 200
 
@@ -102,10 +106,11 @@ const runWithMock = <A, E>(
   const originalFetch = globalThis.fetch
   globalThis.fetch = createMockFetch(mocks)
 
-  return Effect.runPromise(effect.pipe(Effect.provide(HttpClientNoTracing)))
-    .finally(() => {
-      globalThis.fetch = originalFetch
-    })
+  return Effect.runPromise(
+    effect.pipe(Effect.provide(HttpClientNoTracing)),
+  ).finally(() => {
+    globalThis.fetch = originalFetch
+  })
 }
 
 // ============================================
@@ -215,7 +220,10 @@ describe('readRepository', () => {
   })
 
   test('returns undefined for object without url', () => {
-    const repository = { type: 'git' } as unknown as { type: string; url: string }
+    const repository = { type: 'git' } as unknown as {
+      type: string
+      url: string
+    }
     expect(readRepository(repository)).toBeUndefined()
   })
 })
@@ -321,7 +329,8 @@ describe('fetchPackument', () => {
           version: '1.0.0',
           dist: {
             integrity: 'sha512-abc123',
-            tarball: 'https://registry.npmjs.org/my-package/-/my-package-1.0.0.tgz',
+            tarball:
+              'https://registry.npmjs.org/my-package/-/my-package-1.0.0.tgz',
           },
         },
       },
@@ -329,9 +338,12 @@ describe('fetchPackument', () => {
     }
 
     const spec = Spec.parse('my-package', '1.0.0')
-    const result = await runWithMock(fetchPackument({ spec: spec.final }), {
-      'registry.npmjs.org/my-package': mockPackument,
-    })
+    const result = await runWithMock(
+      fetchPackument({ spec: spec.final }),
+      {
+        'registry.npmjs.org/my-package': mockPackument,
+      },
+    )
 
     expect(result).toMatchObject({
       name: 'my-package',
@@ -342,18 +354,24 @@ describe('fetchPackument', () => {
   test('returns undefined on parse error', async () => {
     // Mock an invalid packument response that fails schema validation
     const spec = Spec.parse('my-package', '1.0.0')
-    const result = await runWithMock(fetchPackument({ spec: spec.final }), {
-      'registry.npmjs.org/my-package': { invalid: 'data' },
-    })
+    const result = await runWithMock(
+      fetchPackument({ spec: spec.final }),
+      {
+        'registry.npmjs.org/my-package': { invalid: 'data' },
+      },
+    )
 
     expect(result).toBeUndefined()
   })
 
   test('returns undefined on network error', async () => {
     const spec = Spec.parse('my-package', '1.0.0')
-    const result = await runWithMock(fetchPackument({ spec: spec.final }), {
-      'registry.npmjs.org/my-package': { status: 500, body: {} },
-    })
+    const result = await runWithMock(
+      fetchPackument({ spec: spec.final }),
+      {
+        'registry.npmjs.org/my-package': { status: 500, body: {} },
+      },
+    )
 
     expect(result).toBeUndefined()
   })
@@ -394,7 +412,10 @@ describe('fetchRegistryManifest', () => {
     const result = await runWithMock(
       fetchRegistryManifest({ spec: spec.final }),
       {
-        'registry.npmjs.org/my-package/1.0.0': { name: 'test', version: '1.0.0' },
+        'registry.npmjs.org/my-package/1.0.0': {
+          name: 'test',
+          version: '1.0.0',
+        },
       },
     )
 
@@ -414,7 +435,10 @@ describe('fetchRegistryManifest', () => {
       },
     )
 
-    expect(result).toMatchObject({ name: 'my-package', version: '1.5.0' })
+    expect(result).toMatchObject({
+      name: 'my-package',
+      version: '1.5.0',
+    })
   })
 
   test('uses latest for tilde ranges', async () => {
@@ -429,7 +453,10 @@ describe('fetchRegistryManifest', () => {
       },
     )
 
-    expect(result).toMatchObject({ name: 'my-package', version: '2.0.5' })
+    expect(result).toMatchObject({
+      name: 'my-package',
+      version: '2.0.5',
+    })
   })
 
   test('uses latest for wildcard', async () => {
@@ -444,14 +471,20 @@ describe('fetchRegistryManifest', () => {
       },
     )
 
-    expect(result).toMatchObject({ name: 'my-package', version: '3.0.0' })
+    expect(result).toMatchObject({
+      name: 'my-package',
+      version: '3.0.0',
+    })
   })
 })
 
 describe('fetchOpenIssueCount', () => {
   test('parses issue count from shields.io SVG', async () => {
     const result = await runWithMock(
-      fetchOpenIssueCount({ org: 'ruyadorno', repo: 'github-repo-info' }),
+      fetchOpenIssueCount({
+        org: 'ruyadorno',
+        repo: 'github-repo-info',
+      }),
       {
         'img.shields.io/github/issues/ruyadorno/github-repo-info': {
           body: '<svg aria-label="issues: 5 open">Test SVG</svg>',
@@ -481,12 +514,16 @@ describe('fetchOpenIssueCount', () => {
 describe('fetchOpenPullRequestCount', () => {
   test('parses PR count from shields.io SVG', async () => {
     const result = await runWithMock(
-      fetchOpenPullRequestCount({ org: 'ruyadorno', repo: 'github-repo-info' }),
+      fetchOpenPullRequestCount({
+        org: 'ruyadorno',
+        repo: 'github-repo-info',
+      }),
       {
-        'img.shields.io/github/issues-pr/ruyadorno/github-repo-info': {
-          body: '<svg aria-label="pull requests: 3 open">Test SVG</svg>',
-          isText: true,
-        },
+        'img.shields.io/github/issues-pr/ruyadorno/github-repo-info':
+          {
+            body: '<svg aria-label="pull requests: 3 open">Test SVG</svg>',
+            isText: true,
+          },
       },
     )
 
@@ -510,7 +547,8 @@ describe('fetchDownloadsLastYear', () => {
     const result = await runWithMock(
       fetchDownloadsLastYear({ spec: spec.final }),
       {
-        'api.npmjs.org/downloads/range/last-year/my-package': mockDownloads,
+        'api.npmjs.org/downloads/range/last-year/my-package':
+          mockDownloads,
       },
     )
 
@@ -532,7 +570,9 @@ describe('fetchDownloadsLastYear', () => {
     const result = await runWithMock(
       fetchDownloadsLastYear({ spec: spec.final }),
       {
-        'api.npmjs.org/downloads/range/last-year/my-package': { invalid: 'data' },
+        'api.npmjs.org/downloads/range/last-year/my-package': {
+          invalid: 'data',
+        },
       },
     )
 
@@ -571,7 +611,9 @@ describe('fetchGitHubRepo', () => {
     }
 
     const result = await runWithMock(
-      fetchGitHubRepo({ gitHubApi: 'https://api.github.com/repos/vltpkg/vlt' }),
+      fetchGitHubRepo({
+        gitHubApi: 'https://api.github.com/repos/vltpkg/vlt',
+      }),
       {
         'api.github.com/repos/vltpkg/vlt': mockRepo,
       },
@@ -675,7 +717,9 @@ describe('fetchReadmeFromLocal', () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ content: '# Local README\n\nLocal content' }),
+        json: async () => ({
+          content: '# Local README\n\nLocal content',
+        }),
       })
 
     const result = await Effect.runPromise(
@@ -1018,7 +1062,8 @@ describe('processPackumentVersions', () => {
           dist: {
             unpackedSize: 1000,
             integrity: 'sha512-abc123',
-            tarball: 'https://registry.npmjs.org/my-package/-/my-package-1.0.0.tgz',
+            tarball:
+              'https://registry.npmjs.org/my-package/-/my-package-1.0.0.tgz',
           },
           gitHead: 'abc123',
         },
@@ -1027,7 +1072,8 @@ describe('processPackumentVersions', () => {
           dist: {
             unpackedSize: 1100,
             integrity: 'sha512-def456',
-            tarball: 'https://registry.npmjs.org/my-package/-/my-package-1.0.1.tgz',
+            tarball:
+              'https://registry.npmjs.org/my-package/-/my-package-1.0.1.tgz',
           },
           gitHead: 'def456',
         },
@@ -1072,7 +1118,11 @@ describe('withErrorTracking', () => {
   test('returns data on success', async () => {
     const successEffect = Effect.succeed('test-data')
     const tracked = withErrorTracking(
-      successEffect as Effect.Effect<string, unknown, HttpClient.HttpClient>,
+      successEffect as Effect.Effect<
+        string,
+        unknown,
+        HttpClient.HttpClient
+      >,
       'npm-packument',
     )
 
@@ -1086,7 +1136,11 @@ describe('withErrorTracking', () => {
   test('captures error on failure', async () => {
     const failEffect = Effect.fail(new Error('Network error'))
     const tracked = withErrorTracking(
-      failEffect as Effect.Effect<never, Error, HttpClient.HttpClient>,
+      failEffect as Effect.Effect<
+        never,
+        Error,
+        HttpClient.HttpClient
+      >,
       'github-repo',
     )
 
@@ -1103,7 +1157,11 @@ describe('withErrorTracking', () => {
   test('handles non-Error objects', async () => {
     const failEffect = Effect.fail({ message: 'Custom error' })
     const tracked = withErrorTracking(
-      failEffect as Effect.Effect<never, { message: string }, HttpClient.HttpClient>,
+      failEffect as Effect.Effect<
+        never,
+        { message: string },
+        HttpClient.HttpClient
+      >,
       'npm-downloads',
     )
 
@@ -1120,7 +1178,11 @@ describe('withErrorTracking', () => {
   test('handles unknown error types', async () => {
     const failEffect = Effect.fail('string error')
     const tracked = withErrorTracking(
-      failEffect as Effect.Effect<never, string, HttpClient.HttpClient>,
+      failEffect as Effect.Effect<
+        never,
+        string,
+        HttpClient.HttpClient
+      >,
       'readme',
     )
 
@@ -1158,7 +1220,9 @@ describe('fetchDetailsEffect', () => {
       })
 
       const result = await Effect.runPromise(
-        fetchDetailsEffect({ spec, manifest }).pipe(Effect.provide(HttpClientNoTracing)),
+        fetchDetailsEffect({ spec, manifest }).pipe(
+          Effect.provide(HttpClientNoTracing),
+        ),
       )
 
       // Author should come from the provided manifest
@@ -1180,7 +1244,8 @@ describe('fetchDetailsEffect', () => {
           dist: {
             unpackedSize: 1000,
             integrity: 'sha512-abc123',
-            tarball: 'https://registry.npmjs.org/mypkg/-/mypkg-1.0.0.tgz',
+            tarball:
+              'https://registry.npmjs.org/mypkg/-/mypkg-1.0.0.tgz',
           },
         },
       },
@@ -1193,12 +1258,25 @@ describe('fetchDetailsEffect', () => {
       const urlStr = url instanceof Request ? url.url : url.toString()
 
       // Only packument succeeds (base URL without version)
-      if (urlStr.includes('registry.npmjs.org') && !urlStr.includes('/1.0.0')) {
-        return { ok: true, status: 200, json: async () => packumentData, text: async () => JSON.stringify(packumentData) }
+      if (
+        urlStr.includes('registry.npmjs.org') &&
+        !urlStr.includes('/1.0.0')
+      ) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => packumentData,
+          text: async () => JSON.stringify(packumentData),
+        }
       }
 
       // Everything else fails with 404
-      return { ok: false, status: 404, json: async () => ({}), text: async () => '' }
+      return {
+        ok: false,
+        status: 404,
+        json: async () => ({}),
+        text: async () => '',
+      }
     }) as unknown as typeof fetch
 
     try {
@@ -1209,7 +1287,9 @@ describe('fetchDetailsEffect', () => {
       })
 
       const result = await Effect.runPromise(
-        fetchDetailsEffect({ spec, manifest }).pipe(Effect.provide(HttpClientNoTracing)),
+        fetchDetailsEffect({ spec, manifest }).pipe(
+          Effect.provide(HttpClientNoTracing),
+        ),
       )
 
       // Should have versions from packument
@@ -1234,7 +1314,8 @@ describe('fetchDetailsEffect', () => {
           dist: {
             unpackedSize: 2000,
             integrity: 'sha512-abc123',
-            tarball: 'https://registry.npmjs.org/react/-/react-18.2.0.tgz',
+            tarball:
+              'https://registry.npmjs.org/react/-/react-18.2.0.tgz',
           },
           _npmUser: { name: 'meta-bot', email: 'meta@example.com' },
         },
@@ -1288,12 +1369,17 @@ describe('fetchDetailsEffect', () => {
 
       // Call without manifest (external package scenario)
       const result = await Effect.runPromise(
-        fetchDetailsEffect({ spec }).pipe(Effect.provide(HttpClientNoTracing)),
+        fetchDetailsEffect({ spec }).pipe(
+          Effect.provide(HttpClientNoTracing),
+        ),
       )
 
       // Should have fetched manifest from registry
       expect(result.manifest).toBeDefined()
-      expect((result.manifest as { version?: string } | undefined)?.version).toBe('18.2.0')
+      expect(
+        (result.manifest as { version?: string } | undefined)
+          ?.version,
+      ).toBe('18.2.0')
 
       // Should have versions from packument
       expect(result.versions).toBeDefined()

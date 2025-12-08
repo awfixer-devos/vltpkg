@@ -53,12 +53,19 @@ export const getRepoOrigin = (
     const cleanedRepo = stripHostedGitPrefix(repo)
 
     // Validate input has expected format
-    if (cleanedRepo === '' || cleanedRepo === '/' || !cleanedRepo.includes('/')) {
+    if (
+      cleanedRepo === '' ||
+      cleanedRepo === '/' ||
+      !cleanedRepo.includes('/')
+    ) {
       return undefined
     }
 
     // Handle the specific case of github.com/owner format which should be rejected
-    if (cleanedRepo === 'github.com' || cleanedRepo.startsWith('github.com/')) {
+    if (
+      cleanedRepo === 'github.com' ||
+      cleanedRepo.startsWith('github.com/')
+    ) {
       // Only accept if it's a GitHub shorthand like owner/repo
       const parts = cleanedRepo.split('/')
       if (parts.length !== 2 || parts[0] === 'github.com') {
@@ -67,7 +74,9 @@ export const getRepoOrigin = (
     }
 
     url = normalizeUrl(
-      cleanedRepo.includes('://') ? cleanedRepo : `https://github.com/${cleanedRepo}`,
+      cleanedRepo.includes('://') ? cleanedRepo : (
+        `https://github.com/${cleanedRepo}`
+      ),
     )
   } else if (repo.url) {
     url = normalizeUrl(repo.url)

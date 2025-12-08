@@ -187,7 +187,9 @@ export const ExplorerGrid = ({
     }
 
     // Key forces remount to reset loading state when navigating between packages
-    return <SelectedItem key={externalPackageSpec} item={externalItem} />
+    return (
+      <SelectedItem key={externalPackageSpec} item={externalItem} />
+    )
   }
 
   const items = getItemsData(edges, nodes, query)
