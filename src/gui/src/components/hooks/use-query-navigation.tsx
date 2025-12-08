@@ -12,11 +12,7 @@ import {
 export const useQueryNavigation = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const {
-    query: encodedQueryURL,
-    tab,
-    subTab,
-  } = useParams<{ query: string; tab: string; subTab?: string }>()
+  const { query: encodedQueryURL } = useParams<{ query: string }>()
 
   const query = useGraphStore(state => state.query)
   const updateQuery = useGraphStore(state => state.updateQuery)
@@ -74,18 +70,11 @@ export const useQueryNavigation = () => {
     if (query) {
       const encodedQuery = encodeCompressedQuery(query)
       if (encodedQuery !== encodedQueryURL) {
-        void navigate(`/explore/${encodedQuery}`, {
+        // Always navigate to 'overview' when query changes (navigating to new item)
+        void navigate(`/explore/${encodedQuery}/overview`, {
           relative: 'path',
         })
       }
     }
-  }, [
-    query,
-    navigate,
-    location.pathname,
-    tab,
-    subTab,
-    encodedQueryURL,
-    isNpmRoute,
-  ])
+  }, [query, navigate, location.pathname, encodedQueryURL, isNpmRoute])
 }
